@@ -118,7 +118,7 @@ print(output)
 epoch = 0
 accuracy = 0.0
 
-while (accuracy < 0.9):
+while (accuracy < 0.99):
 	# epoch
 	correct = 0
 	for t, inputs in training:
@@ -135,7 +135,13 @@ while (accuracy < 0.9):
 		if (abs(t - o) < 0.5):
 			correct = correct + 1
 	accuracy = float(correct) / len(training)
-	print("epoch " + str(epoch) + " accuracy " + str(accuracy))
 	epoch = epoch + 1
 
+print("epochs " + str(epoch) + " accuracy " + str(accuracy))
+
+for j in xrange(len(sensors) - 1):
+	print "a_" + str(j)
+	print hidden[j]
+
+print "output"
 print(output)
