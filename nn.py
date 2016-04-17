@@ -46,16 +46,23 @@ class Neuron():
 	def trainjk(self, t, o, inputs):
 		t_inputs = list(inputs)
 		t_inputs.append(1)
-		d_k = (t - o) * o * (1 - o)
+		self.d_k = (t - o) * o * (1 - o)
 		for i in xrange(len(self.weights)):
-			d_w_k = alpha * t_inputs[i] * d_k
+			d_w_k = alpha * t_inputs[i] * self.d_k
 			self.weights[i] = self.weights[i] + d_w_k
 
 	# d_w_(i,j) = alpha * a_i * d_j
-	# d_j = a_j * (1 - a_j) * sum{w_(j,k) * d_k
-#	def trainij(self, j, t, o, inputs, output):
-#		d_j = output.weights[j] * output.d_k * (1-
-
+	# d_j = a_j * (1 - a_j) * sum{w_(j,k) * d_k}
+	# d_j = a_j * (1 - a_j) * w_(j,k) * d_k
+	def trainij(self, j, a_j, inputs, output):
+		t_inputs = list(inputs)
+		t_inputs.append(1)
+		w_jk = output.weights[j]
+		d_k = output.d_k
+		d_j = a_j * (1-a_j) * w_jk * d_k
+		for i in xrange(len(self.weights)):
+			d_w_ij = alpha * t_inputs[i] * d_j 
+			self.weights[i] = self.weights[i] + d_w_ij
 
 def is_token(c):
 	return c in 'abcdefghijklmnopqrstuvwxyz'
@@ -99,7 +106,11 @@ def gen_training(s):
 training = gen_training(raw_input())
 #training = gen_training("a b &&")
 _, sensors = training[0]
-output = Neuron(len(sensors))
+hidden = []
+for i in xrange(len(sensors) - 1):
+	hidden.append(Neuron(len(sensors)))
+
+output = Neuron(len(sensors) - 1)
 
 print(training)
 print(output)
@@ -111,8 +122,14 @@ while (accuracy < 0.9):
 	# epoch
 	correct = 0
 	for t, inputs in training:
-		o = output.activate(inputs)
-		output.trainjk(t, o, inputs)
+		a_j = []
+		for j in xrange(len(sensors) - 1):
+			a_j.append(hidden[j].activate(inputs))
+		o = output.activate(a_j)
+		output.trainjk(t, o, a_j)
+		for j in xrange(len(sensors) - 1):
+	#def trainij(self, j, a_j, inputs, output):
+			hidden[j].trainij(j, a_j[j], inputs, output)
 #		print("t " + str(t) + " o " + str(o))
 #		print(output)
 		if (abs(t - o) < 0.5):
